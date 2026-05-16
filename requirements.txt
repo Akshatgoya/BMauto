@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+scikit-learn
+pandas
+numpy
+pydantic
+google-generativeai
+streamlit
+plotly
