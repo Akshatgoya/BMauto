@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="12" fill="#0A0A0A"/>
+  <path d="M11 37h42l-4-11H19l-4 7H11v4zm5-15 3-7h24l3 7" stroke="#C9A84C" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="21" cy="37" r="4.5" fill="#C9A84C"/>
+  <circle cx="43" cy="37" r="4.5" fill="#C9A84C"/>
+  <text x="32" y="53" text-anchor="middle" fill="#C9A84C" font-family="Georgia, serif" font-size="9" font-weight="700" letter-spacing="0.5">BM</text>
+</svg>

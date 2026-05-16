@@ -3,6 +3,7 @@ import { MessageSquare, X, Send, Key } from 'lucide-react';
 import { GoogleGenerativeAI, SchemaType, type FunctionDeclaration } from '@google/generative-ai';
 import { motion, AnimatePresence } from 'framer-motion';
 import { predictCarPrice, predictBikePrice, type PredictionRequest } from '../api/predict';
+import { APP_NAME } from '../config/brand';
 import axios from 'axios';
 
 const GEMINI_MODEL = 'gemini-2.5-flash';
@@ -54,7 +55,7 @@ function wantsPrediction(text: string): boolean {
 }
 
 const SYSTEM_PROMPT =
-  'You are AutoValuAI, an expert vehicle pricing assistant for the Indian used car and bike market. ' +
+  `You are ${APP_NAME}, an expert vehicle pricing assistant for the Indian used car and bike market. ` +
   'You explain depreciation, resale factors, and market trends. Use ₹ and Lakhs for prices. ' +
   'When the user wants a price estimate and provides enough details (vehicle type, year, original price in lakhs, ' +
   'km driven, fuel, seller type, transmission, previous owners), call predict_vehicle_price. ' +
@@ -333,7 +334,7 @@ export default function Chatbot() {
           >
             <motion.div className="p-4 bg-[#111111] border-b border-brand-gold/20 flex justify-between items-center">
               <motion.div>
-                <h3 className="font-serif font-bold text-white">AutoValuAI Assistant 🤖</h3>
+                <h3 className="font-serif font-bold text-white">{APP_NAME} Assistant 🤖</h3>
                 <p className="text-xs text-brand-gold">
                   {keyStatus === 'valid'
                     ? 'Online · key verified'

@@ -5,5 +5,11 @@ pandas
 numpy
 pydantic
 google-generativeai
-streamlit
-plotly
+python-jose[cryptography]
+bcrypt
+sqlalchemy>=2.0.36
+python-multipart
+aiofiles
+email-validator
+razorpay
+python-dotenv

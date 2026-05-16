@@ -18,6 +18,15 @@
   .gold-gradient-text {
     @apply bg-gradient-to-r from-brand-gold to-brand-goldLight bg-clip-text text-transparent;
   }
+  .brand-wordmark {
+    @apply inline-flex items-baseline font-serif font-bold leading-none;
+  }
+  .brand-wordmark-bm {
+    @apply text-white tracking-[0.18em];
+  }
+  .brand-wordmark-auto {
+    @apply gold-gradient-text tracking-[0.08em] font-bold drop-shadow-[0_0_12px_rgba(201,168,76,0.35)];
+  }
 }
 
 /* Custom Cursor */

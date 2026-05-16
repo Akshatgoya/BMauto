@@ -5,7 +5,7 @@ from ml_pipeline import VehicleModelPipeline
 import os
 import uvicorn
 
-app = FastAPI(title="AutoValuAI API")
+app = FastAPI(title="BMauto API")
 
 # Setup CORS
 app.add_middleware(

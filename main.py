@@ -4,6 +4,22 @@ from pydantic import BaseModel
 import pandas as pd
 import numpy as np
 import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
+except ImportError:
+    pass
+
+from backend.database import init_db
+from backend.routes_auth import router as auth_router
+from backend.routes_listings import router as listings_router
+from backend.routes_listings import set_predict_fn
+from backend.routes_payment import router as payment_router
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression, Lasso
 from sklearn.neural_network import MLPRegressor
@@ -18,7 +34,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CAR_CSV = os.path.join(BASE_DIR, "car_data.csv")
 BIKE_CSV = os.path.join(BASE_DIR, "bike_data (1).csv")
 
-app = FastAPI(title="AutoValuAI API")
+app = FastAPI(title="BMauto API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -124,12 +140,19 @@ async def train():
     global car_df_raw, bike_df_raw, car_metrics, bike_metrics
     global car_best_key, bike_best_key
 
+    init_db()
+
     car_df_raw, car_models, car_scaler, car_metrics, car_best_key = _train_vehicle(
         CAR_CSV, "Car_Name"
     )
     bike_df_raw, bike_models, bike_scaler, bike_metrics, bike_best_key = _train_vehicle(
         BIKE_CSV, "Bike_Name"
     )
+
+
+app.include_router(auth_router)
+app.include_router(listings_router)
+app.include_router(payment_router)
 
 
 class VehicleInput(BaseModel):
@@ -154,6 +177,20 @@ def predict_bike(data: VehicleInput):
     if not bike_models:
         raise HTTPException(status_code=500, detail="Models not loaded")
     return _predict(bike_models, bike_scaler, bike_metrics, bike_best_key, data)
+
+
+def _predict_for_marketplace(vehicle_type: str, encoded: dict):
+    data = VehicleInput(**encoded)
+    if vehicle_type == "bike":
+        if not bike_models:
+            return {"best_prediction": max(data.present_price * 0.75, 0.1)}
+        return _predict(bike_models, bike_scaler, bike_metrics, bike_best_key, data)
+    if not car_models:
+        return {"best_prediction": max(data.present_price * 0.75, 0.1)}
+    return _predict(car_models, car_scaler, car_metrics, car_best_key, data)
+
+
+set_predict_fn(_predict_for_marketplace)
 
 
 @app.get("/analytics/car")
@@ -218,7 +255,7 @@ async def chat_endpoint(request: ChatRequest):
 
         # Basic system prompt
         system_instruction = (
-            "You are AutoValuAI, an expert vehicle pricing assistant for the Indian used car and bike market. "
+            "You are BMauto, an expert vehicle pricing assistant for the Indian used car and bike market. "
             "You explain depreciation, resale factors, and market trends. Use ₹ and Lakhs for prices."
         )
 

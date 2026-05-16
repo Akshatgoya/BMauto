@@ -17,9 +17,9 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 # --- 1. CONFIGURATION AND STYLING ---
 
 st.set_page_config(
-    page_title="Vehicle Price Predictor",
+    page_title="AutoValuAI — Vehicle Price Predictor",
     layout="wide",
-    page_icon="💸"
+    page_icon="🚗"
 )
 
 # Custom CSS for a professional, dark/clean theme

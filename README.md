@@ -32,7 +32,25 @@ A full-stack, AI-powered vehicle price prediction marketplace inspired by luxury
    ```
 4. Access the beautiful luxury UI at `http://localhost:5173`.
 
-### 3. AI Chatbot
+### 3. Marketplace (OLX-style Buy & Sell)
+
+**Seed sample data (first time only):**
+```bash
+python backend/seed_data.py
+```
+
+**Demo account:** `priya@autovaluai.demo` / `demo1234`
+
+**New pages:**
+- `/marketplace` — Browse cars & bikes
+- `/auth` — Sign in / Register
+- `/sell` — Post a listing (login required)
+- `/dashboard` — Profile, my listings, saved vehicles
+- `/listing/:id` — Listing details
+
+Database: SQLite at `backend/autovaluai.db`
+
+### 4. AI Chatbot
 - Open the Chatbot in the bottom right corner of the website.
 - Enter your Gemini API key in the settings (Key icon) to chat with the AutoValuAI Assistant.
 - Your key is stored securely in your browser's local storage.
