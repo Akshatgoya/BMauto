@@ -10,8 +10,35 @@ import {
   PaymentRecord,
 } from '../api/payment';
 import ListingCard from '../components/ListingCard';
+import {
+  fetchMyRentals,
+  fetchMyBookings,
+  deleteRental,
+  updateRental,
+  updateBookingStatus,
+  Rental,
+  RentalBooking,
+} from '../api/rentals';
+import {
+  fetchMyParts,
+  fetchMyOrdersBuying,
+  fetchMyOrdersSelling,
+  deletePart,
+  updatePartOrderStatus,
+  Part,
+  PartOrder,
+} from '../api/parts';
 
-type Tab = 'profile' | 'listings' | 'saved' | 'payments' | 'sales';
+type Tab =
+  | 'profile'
+  | 'listings'
+  | 'saved'
+  | 'payments'
+  | 'sales'
+  | 'my-rentals'
+  | 'my-bookings'
+  | 'my-parts'
+  | 'parts-orders';
 
 function statusBadge(status: string) {
   const s = status.toLowerCase();
@@ -29,6 +56,11 @@ export default function DashboardPage() {
   const [saved, setSaved] = useState<Listing[]>([]);
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [sales, setSales] = useState<PaymentRecord[]>([]);
+  const [myRentals, setMyRentals] = useState<Rental[]>([]);
+  const [myBookings, setMyBookings] = useState<RentalBooking[]>([]);
+  const [myParts, setMyParts] = useState<Part[]>([]);
+  const [ordersBuying, setOrdersBuying] = useState<PartOrder[]>([]);
+  const [ordersSelling, setOrdersSelling] = useState<PartOrder[]>([]);
   const [form, setForm] = useState({ full_name: '', phone: '', city: '' });
 
   useEffect(() => {
@@ -48,6 +80,20 @@ export default function DashboardPage() {
     }
     if (tab === 'sales') {
       fetchPaymentsReceived(token).then(setSales).catch(() => toast.error('Failed to load sales'));
+    }
+    if (tab === 'my-rentals') {
+      fetchMyRentals(token).then(setMyRentals).catch(() => toast.error('Failed to load rentals'));
+    }
+    if (tab === 'my-bookings') {
+      fetchMyBookings(token).then(setMyBookings).catch(() => toast.error('Failed to load bookings'));
+    }
+    if (tab === 'my-parts') {
+      fetchMyParts(token).then(setMyParts).catch(() => toast.error('Failed to load parts'));
+    }
+    if (tab === 'parts-orders') {
+      Promise.all([fetchMyOrdersBuying(token), fetchMyOrdersSelling(token)])
+        .then(([b, s]) => { setOrdersBuying(b); setOrdersSelling(s); })
+        .catch(() => toast.error('Failed to load orders'));
     }
   }, [tab, token]);
 
@@ -76,9 +122,41 @@ export default function DashboardPage() {
     toast.success('Deleted');
   };
 
+  const toggleRentalAvail = async (id: number, avail: boolean) => {
+    if (!token) return;
+    await updateRental(token, id, { is_available: !avail });
+    setMyRentals(await fetchMyRentals(token));
+    toast.success(avail ? 'Marked unavailable' : 'Marked available');
+  };
+
+  const removeRental = async (id: number) => {
+    if (!token || !confirm('Delete rental listing?')) return;
+    await deleteRental(token, id);
+    setMyRentals(await fetchMyRentals(token));
+    toast.success('Deleted');
+  };
+
+  const cancelBooking = async (id: number) => {
+    if (!token) return;
+    await updateBookingStatus(token, id, 'cancelled');
+    setMyBookings(await fetchMyBookings(token));
+    toast.success('Booking cancelled');
+  };
+
+  const removePart = async (id: number) => {
+    if (!token || !confirm('Remove this part listing?')) return;
+    await deletePart(token, id);
+    setMyParts(await fetchMyParts(token));
+    toast.success('Removed');
+  };
+
   const navItems: { id: Tab; label: string }[] = [
     { id: 'profile', label: '👤 My Profile' },
     { id: 'listings', label: '📋 My Listings' },
+    { id: 'my-rentals', label: '🔑 My Rentals' },
+    { id: 'my-bookings', label: '📅 My Bookings' },
+    { id: 'my-parts', label: '🔧 My Parts' },
+    { id: 'parts-orders', label: '📦 Parts Orders' },
     { id: 'saved', label: '❤️ Saved Vehicles' },
     { id: 'payments', label: '💳 My Payments' },
     { id: 'sales', label: '💰 Sales Received' },
@@ -262,6 +340,107 @@ export default function DashboardPage() {
                 {!payments.length && (
                   <p className="p-8 text-center text-gray-500">No payments yet.</p>
                 )}
+              </div>
+            </div>
+          )}
+
+          {tab === 'my-rentals' && (
+            <div>
+              <h2 className="font-serif text-2xl text-white mb-6">My Rental Listings</h2>
+              <div className="space-y-4">
+                {myRentals.map((r) => (
+                  <div key={r.id} className="glass-card p-4 flex flex-col md:flex-row justify-between gap-4 border border-brand-rental/20">
+                    <div>
+                      <Link to={`/rentals/${r.id}`} className="text-white font-semibold hover:text-brand-rental">{r.title}</Link>
+                      <p className="text-brand-rental text-sm">₹{r.price_per_day}/day · {r.location}</p>
+                      <span className={`text-xs px-2 py-0.5 rounded border ${r.is_available ? 'border-brand-rental text-brand-rental' : 'border-gray-500 text-gray-400'}`}>
+                        {r.is_available ? 'Available' : 'Unavailable'}
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button type="button" onClick={() => toggleRentalAvail(r.id, r.is_available)} className="text-xs border border-brand-rental text-brand-rental px-3 py-1 rounded">
+                        Toggle availability
+                      </button>
+                      <button type="button" onClick={() => removeRental(r.id)} className="text-xs border border-red-500 text-red-400 px-3 py-1 rounded">Delete</button>
+                    </div>
+                  </div>
+                ))}
+                {!myRentals.length && <p className="text-gray-500">No rentals. <Link to="/add-rental" className="text-brand-rental">List one</Link></p>}
+              </div>
+            </div>
+          )}
+
+          {tab === 'my-bookings' && (
+            <div>
+              <h2 className="font-serif text-2xl text-white mb-6">My Bookings</h2>
+              <div className="space-y-4">
+                {myBookings.map((b) => (
+                  <div key={b.id} className="glass-card p-4 border border-brand-rental/20">
+                    <h3 className="text-white font-semibold">{b.listing_title}</h3>
+                    <p className="text-sm text-gray-400">{new Date(b.start_date).toLocaleDateString()} – {new Date(b.end_date).toLocaleDateString()}</p>
+                    <p className="text-brand-rental">₹{b.total_price.toLocaleString('en-IN')} · {b.total_days} days</p>
+                    <span className="text-xs uppercase px-2 py-0.5 rounded border border-yellow-500 text-yellow-400">{b.status}</span>
+                    {['pending', 'confirmed'].includes(b.status) && (
+                      <button type="button" onClick={() => cancelBooking(b.id)} className="ml-4 text-xs text-red-400 border border-red-500 px-2 py-0.5 rounded">Cancel</button>
+                    )}
+                  </div>
+                ))}
+                {!myBookings.length && <p className="text-gray-500">No bookings. <Link to="/rentals" className="text-brand-rental">Browse rentals</Link></p>}
+              </div>
+            </div>
+          )}
+
+          {tab === 'my-parts' && (
+            <div>
+              <h2 className="font-serif text-2xl text-white mb-6">My Parts</h2>
+              <div className="space-y-4">
+                {myParts.map((p) => (
+                  <div key={p.id} className="glass-card p-4 flex justify-between gap-4">
+                    <div>
+                      <Link to={`/parts/${p.id}`} className="text-white font-semibold hover:text-brand-gold">{p.title}</Link>
+                      <p className="text-brand-gold text-sm">₹{p.price} · Qty {p.quantity_available}</p>
+                    </div>
+                    <button type="button" onClick={() => removePart(p.id)} className="text-xs border border-red-500 text-red-400 px-3 py-1 rounded h-fit">Delete</button>
+                  </div>
+                ))}
+                {!myParts.length && <p className="text-gray-500">No parts. <Link to="/sell-part" className="text-brand-gold">Sell a part</Link></p>}
+              </div>
+            </div>
+          )}
+
+          {tab === 'parts-orders' && (
+            <div>
+              <h2 className="font-serif text-2xl text-white mb-6">Parts Orders</h2>
+              <h3 className="text-brand-gold text-sm uppercase tracking-widest mb-3">Buying</h3>
+              <div className="space-y-3 mb-8">
+                {ordersBuying.map((o) => (
+                  <div key={o.id} className="glass-card p-4 text-sm">
+                    <p className="text-white">{o.part_title}</p>
+                    <p className="text-gray-400">Qty {o.quantity} · ₹{o.total_price}</p>
+                    <span className="text-xs text-yellow-400">{o.status}</span>
+                    {o.status === 'pending' && token && (
+                      <button type="button" onClick={async () => { await updatePartOrderStatus(token, o.id, 'cancelled'); setOrdersBuying(await fetchMyOrdersBuying(token)); toast.success('Cancelled'); }} className="ml-2 text-xs text-red-400">Cancel</button>
+                    )}
+                  </div>
+                ))}
+                {!ordersBuying.length && <p className="text-gray-500 text-sm">No purchase orders.</p>}
+              </div>
+              <h3 className="text-brand-gold text-sm uppercase tracking-widest mb-3">Selling (Incoming)</h3>
+              <div className="space-y-3">
+                {ordersSelling.map((o) => (
+                  <div key={o.id} className="glass-card p-4 text-sm">
+                    <p className="text-white">{o.part_title} · {o.buyer_name}</p>
+                    <p className="text-gray-400">Qty {o.quantity} · ₹{o.total_price}</p>
+                    <span className="text-xs text-yellow-400">{o.status}</span>
+                    {token && o.status === 'pending' && (
+                      <button type="button" onClick={async () => { await updatePartOrderStatus(token, o.id, 'confirmed'); setOrdersSelling(await fetchMyOrdersSelling(token)); toast.success('Confirmed'); }} className="ml-2 text-xs text-brand-gold border border-brand-gold px-2 py-0.5 rounded">Confirm</button>
+                    )}
+                    {token && o.status === 'confirmed' && (
+                      <button type="button" onClick={async () => { await updatePartOrderStatus(token, o.id, 'shipped'); setOrdersSelling(await fetchMyOrdersSelling(token)); toast.success('Marked shipped'); }} className="ml-2 text-xs text-brand-gold border border-brand-gold px-2 py-0.5 rounded">Ship</button>
+                    )}
+                  </div>
+                ))}
+                {!ordersSelling.length && <p className="text-gray-500 text-sm">No incoming orders.</p>}
               </div>
             </div>
           )}

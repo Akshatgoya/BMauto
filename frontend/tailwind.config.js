@@ -13,6 +13,8 @@ export default {
           gold: '#C9A84C',
           goldLight: '#D4AF37',
           teal: '#00CCBB',
+          rental: '#E8952A',
+          rentalLight: '#FFB347',
         }
       },
       fontFamily: {

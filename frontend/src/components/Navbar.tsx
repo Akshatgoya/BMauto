@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, Heart, Bell } from 'lucide-react';
+import { Menu, X, Heart, Bell, Key, Wrench } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import BrandLogo from './BrandLogo';
 
@@ -26,7 +26,9 @@ export default function Navbar() {
           <a href="/#hero" className="hover:text-brand-gold transition-colors">Home</a>
           <a href="/#predict" className="hover:text-brand-gold transition-colors">Predict Price</a>
           <Link to="/marketplace" className="hover:text-brand-gold transition-colors">Marketplace</Link>
-          <Link to="/sell" className="hover:text-brand-gold transition-colors">Sell</Link>
+          <Link to="/rentals" className="hover:text-brand-rental transition-colors flex items-center gap-1"><Key size={14} /> Rentals</Link>
+          <Link to="/parts" className="hover:text-brand-gold transition-colors flex items-center gap-1"><Wrench size={14} /> Spare Parts</Link>
+          <Link to="/sell-hub" className="hover:text-brand-gold transition-colors">Sell</Link>
         </div>
 
         <div className="hidden md:flex items-center gap-4">
@@ -45,7 +47,7 @@ export default function Navbar() {
                   <div className="absolute right-0 mt-2 w-48 bg-[#111] border border-brand-gold/30 rounded-lg shadow-xl py-2 text-sm normal-case tracking-normal">
                     <Link to="/dashboard" className="block px-4 py-2 hover:bg-white/5" onClick={() => setDropdown(false)}>Dashboard</Link>
                     <Link to="/dashboard" className="block px-4 py-2 hover:bg-white/5" onClick={() => setDropdown(false)}>My Listings</Link>
-                    <Link to="/sell" className="block px-4 py-2 hover:bg-white/5" onClick={() => setDropdown(false)}>Post Ad</Link>
+                    <Link to="/sell-hub" className="block px-4 py-2 hover:bg-white/5" onClick={() => setDropdown(false)}>Post Ad</Link>
                     <button onClick={() => { logout(); setDropdown(false); navigate('/'); }} className="block w-full text-left px-4 py-2 hover:bg-white/5 text-red-400">Logout</button>
                   </div>
                 )}
@@ -68,7 +70,9 @@ export default function Navbar() {
         <div className="md:hidden bg-brand-black border-b border-brand-gold/20 py-4 px-6 flex flex-col gap-3 text-sm uppercase tracking-widest">
           <Link to="/" onClick={() => setMobileMenuOpen(false)}>Home</Link>
           <Link to="/marketplace" onClick={() => setMobileMenuOpen(false)}>Marketplace</Link>
-          <Link to="/sell" onClick={() => setMobileMenuOpen(false)}>Sell</Link>
+          <Link to="/rentals" onClick={() => setMobileMenuOpen(false)}>Rentals</Link>
+          <Link to="/parts" onClick={() => setMobileMenuOpen(false)}>Spare Parts</Link>
+          <Link to="/sell-hub" onClick={() => setMobileMenuOpen(false)}>Sell</Link>
           {isAuthenticated ? (
             <>
               <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)}>Dashboard</Link>

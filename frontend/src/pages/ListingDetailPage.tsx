@@ -1,11 +1,16 @@
-import { useEffect, useState } from 'react';
-import { Link, useParams, useLocation } from 'react-router-dom';
-import toast from 'react-hot-toast';
-import { fetchListing, toggleSaveListing, Listing, fetchListings } from '../api/listings';
-import { useAuth } from '../context/AuthContext';
-import ListingCard from '../components/ListingCard';
-import PurchasePanel from '../components/PurchasePanel';
-import { APP_NAME } from '../config/brand';
+import { useEffect, useState } from "react";
+import { Link as RouterLink, useParams, useLocation } from "react-router-dom";
+import toast from "react-hot-toast";
+import {
+  fetchListing,
+  toggleSaveListing,
+  Listing,
+  fetchListings,
+} from "../api/listings";
+import { useAuth } from "../context/AuthContext";
+import ListingCard from "../components/ListingCard";
+import PurchasePanel from "../components/PurchasePanel";
+import { APP_NAME } from "../config/brand";
 
 export default function ListingDetailPage() {
   const { id } = useParams();
@@ -25,11 +30,11 @@ export default function ListingDetailPage() {
         setListing(l);
         const sim = await fetchListings(
           { type: l.vehicle_type, brand: l.brand, limit: 4 },
-          token || undefined
+          token || undefined,
         );
         setSimilar(sim.items.filter((x) => x.id !== l.id).slice(0, 3));
       } catch {
-        toast.error('Listing not found');
+        toast.error("Listing not found");
       } finally {
         setLoading(false);
       }
@@ -37,8 +42,10 @@ export default function ListingDetailPage() {
   }, [id, token, showPhone]);
 
   useEffect(() => {
-    if (!loading && location.hash === '#purchase') {
-      document.getElementById('purchase')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (!loading && location.hash === "#purchase") {
+      document
+        .getElementById("purchase")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, [loading, location.hash]);
 
@@ -52,10 +59,10 @@ export default function ListingDetailPage() {
   if (!listing) {
     return (
       <div className="min-h-screen bg-brand-black pt-24 text-center text-gray-400">
-        Listing not found.{' '}
-        <Link to="/marketplace" className="text-brand-gold">
+        Listing not found.{" "}
+        <RouterLink to="/marketplace" className="text-brand-gold">
           Back
-        </Link>
+        </RouterLink>
       </div>
     );
   }
@@ -64,14 +71,14 @@ export default function ListingDetailPage() {
   const diff = listing.asking_price - listing.ai_predicted_price;
   const pct = listing.ai_predicted_price
     ? ((diff / listing.ai_predicted_price) * 100).toFixed(1)
-    : '0';
-  const isSold = listing.status === 'sold';
+    : "0";
+  const isSold = listing.status === "sold";
   const isOwnListing = user?.id === listing.seller_id;
   const canBuy = !isSold && !isOwnListing;
 
   const revealPhone = async () => {
     if (!isAuthenticated) {
-      toast.error('Login to view phone number');
+      toast.error("Login to view phone number");
       return;
     }
     setShowPhone(true);
@@ -80,13 +87,13 @@ export default function ListingDetailPage() {
   };
 
   const handleSave = async () => {
-    if (!token) return toast.error('Login to save');
+    if (!token) return toast.error("Login to save");
     await toggleSaveListing(token, listing.id);
     setListing({ ...listing, is_saved: !listing.is_saved });
   };
 
   const handlePaymentSuccess = () => {
-    setListing({ ...listing, status: 'sold' });
+    setListing({ ...listing, status: "sold" });
   };
 
   const panelProps = {
@@ -115,10 +122,14 @@ export default function ListingDetailPage() {
               )}
               <div className="relative h-80 bg-[#111] flex items-center justify-center">
                 {photos[photoIdx] ? (
-                  <img src={photos[photoIdx]} alt="" className="w-full h-full object-cover" />
+                  <img
+                    src={photos[photoIdx]}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <span className="text-6xl text-brand-gold/30">
-                    {listing.vehicle_type === 'bike' ? '🏍️' : '🚗'}
+                    {listing.vehicle_type === "bike" ? "🏍️" : "🚗"}
                   </span>
                 )}
                 {canBuy && (
@@ -126,7 +137,9 @@ export default function ListingDetailPage() {
                     href="#purchase"
                     onClick={(e) => {
                       e.preventDefault();
-                      document.getElementById('purchase')?.scrollIntoView({ behavior: 'smooth' });
+                      document
+                        .getElementById("purchase")
+                        ?.scrollIntoView({ behavior: "smooth" });
                     }}
                     className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 to-transparent px-4 pb-4 pt-12 z-10"
                   >
@@ -144,10 +157,16 @@ export default function ListingDetailPage() {
                       type="button"
                       onClick={() => setPhotoIdx(i)}
                       className={`w-16 h-12 rounded overflow-hidden border ${
-                        photoIdx === i ? 'border-brand-gold' : 'border-transparent'
+                        photoIdx === i
+                          ? "border-brand-gold"
+                          : "border-transparent"
                       }`}
                     >
-                      <img src={p} alt="" className="w-full h-full object-cover" />
+                      <img
+                        src={p}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
                     </button>
                   ))}
                 </div>
@@ -160,19 +179,21 @@ export default function ListingDetailPage() {
             </div>
 
             <div className="glass-card p-6">
-              <h1 className="font-serif text-3xl text-white">{listing.title}</h1>
+              <h1 className="font-serif text-3xl text-white">
+                {listing.title}
+              </h1>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm">
                 {[
-                  ['Year', listing.year],
-                  ['Brand', listing.brand],
-                  ['Model', listing.model],
-                  ['Color', listing.color],
-                  ['Fuel', listing.fuel_type],
-                  ['Transmission', listing.transmission],
-                  ['KMs', listing.kms_driven.toLocaleString()],
-                  ['Owners', listing.owner_count],
-                  ['City', listing.city],
-                  ['Listed', new Date(listing.created_at).toLocaleDateString()],
+                  ["Year", listing.year],
+                  ["Brand", listing.brand],
+                  ["Model", listing.model],
+                  ["Color", listing.color],
+                  ["Fuel", listing.fuel_type],
+                  ["Transmission", listing.transmission],
+                  ["KMs", listing.kms_driven.toLocaleString()],
+                  ["Owners", listing.owner_count],
+                  ["City", listing.city],
+                  ["Listed", new Date(listing.created_at).toLocaleDateString()],
                 ].map(([k, v]) => (
                   <div key={k}>
                     <span className="text-gray-500 block text-xs">{k}</span>
@@ -180,22 +201,32 @@ export default function ListingDetailPage() {
                   </div>
                 ))}
               </div>
-              <p className="mt-6 text-gray-400 leading-relaxed">{listing.description}</p>
+              <p className="mt-6 text-gray-400 leading-relaxed">
+                {listing.description}
+              </p>
             </div>
 
             <div className="glass-card p-6 border-2 border-brand-gold/40">
-              <h3 className="text-brand-gold font-serif text-xl mb-4">🤖 {APP_NAME} Price Analysis</h3>
+              <h3 className="text-brand-gold font-serif text-xl mb-4">
+                🤖 {APP_NAME} Price Analysis
+              </h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <span className="text-gray-500 text-xs">Asking Price</span>
-                  <p className="text-2xl text-white">₹{listing.asking_price.toFixed(2)}L</p>
+                  <p className="text-2xl text-white">
+                    ₹{listing.asking_price.toFixed(2)}L
+                  </p>
                 </div>
                 <div>
                   <span className="text-gray-500 text-xs">AI Predicted</span>
-                  <p className="text-2xl text-brand-teal">₹{listing.ai_predicted_price.toFixed(2)}L</p>
+                  <p className="text-2xl text-brand-teal">
+                    ₹{listing.ai_predicted_price.toFixed(2)}L
+                  </p>
                 </div>
               </div>
-              <p className={`mt-3 text-sm ${diff > 0 ? 'text-red-400' : 'text-green-400'}`}>
+              <p
+                className={`mt-3 text-sm ${diff > 0 ? "text-red-400" : "text-green-400"}`}
+              >
                 {diff > 0
                   ? `Overpriced by ₹${diff.toFixed(2)}L (${pct}%)`
                   : `Under market by ₹${Math.abs(diff).toFixed(2)}L`}

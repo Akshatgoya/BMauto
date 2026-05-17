@@ -20,6 +20,8 @@ from backend.routes_auth import router as auth_router
 from backend.routes_listings import router as listings_router
 from backend.routes_listings import set_predict_fn
 from backend.routes_payment import router as payment_router
+from backend.routes_rentals import router as rentals_router
+from backend.routes_parts import router as parts_router
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression, Lasso
 from sklearn.neural_network import MLPRegressor
@@ -153,6 +155,8 @@ async def train():
 app.include_router(auth_router)
 app.include_router(listings_router)
 app.include_router(payment_router)
+app.include_router(rentals_router)
+app.include_router(parts_router)
 
 
 class VehicleInput(BaseModel):

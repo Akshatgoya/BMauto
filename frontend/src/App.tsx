@@ -12,6 +12,13 @@ import MarketplacePage from './pages/MarketplacePage';
 import ListingDetailPage from './pages/ListingDetailPage';
 import SellPage from './pages/SellPage';
 import DashboardPage from './pages/DashboardPage';
+import RentalsPage from './pages/RentalsPage';
+import RentalDetailPage from './pages/RentalDetailPage';
+import AddRentalPage from './pages/AddRentalPage';
+import PartsPage from './pages/PartsPage';
+import PartDetailPage from './pages/PartDetailPage';
+import SellPartPage from './pages/SellPartPage';
+import SellHubPage from './pages/SellHubPage';
 
 function App() {
   useEffect(() => {
@@ -30,7 +37,14 @@ function App() {
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/marketplace" element={<MarketplacePage />} />
             <Route path="/listing/:id" element={<ListingDetailPage />} />
+            <Route path="/sell-hub" element={<SellHubPage />} />
             <Route path="/sell" element={<ProtectedRoute><SellPage /></ProtectedRoute>} />
+            <Route path="/rentals" element={<RentalsPage />} />
+            <Route path="/rentals/:id" element={<RentalDetailPage />} />
+            <Route path="/add-rental" element={<ProtectedRoute><AddRentalPage /></ProtectedRoute>} />
+            <Route path="/parts" element={<PartsPage />} />
+            <Route path="/parts/:id" element={<PartDetailPage />} />
+            <Route path="/sell-part" element={<ProtectedRoute><SellPartPage /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           </Routes>
         </div>

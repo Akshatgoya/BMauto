@@ -52,6 +52,34 @@ class User(Base):
         foreign_keys="Payment.seller_id",
         cascade="all, delete-orphan",
     )
+    rental_listings = relationship(
+        "RentalListing",
+        back_populates="owner",
+        cascade="all, delete-orphan",
+    )
+    rental_bookings = relationship(
+        "RentalBooking",
+        back_populates="renter",
+        foreign_keys="RentalBooking.renter_id",
+        cascade="all, delete-orphan",
+    )
+    spare_parts = relationship(
+        "SparePart",
+        back_populates="seller",
+        cascade="all, delete-orphan",
+    )
+    part_orders_buying = relationship(
+        "PartOrder",
+        back_populates="buyer",
+        foreign_keys="PartOrder.buyer_id",
+        cascade="all, delete-orphan",
+    )
+    part_orders_selling = relationship(
+        "PartOrder",
+        back_populates="seller",
+        foreign_keys="PartOrder.seller_id",
+        cascade="all, delete-orphan",
+    )
 
 
 class Listing(Base):
@@ -115,6 +143,94 @@ class Payment(Base):
     buyer = relationship("User", back_populates="purchases", foreign_keys=[buyer_id])
     seller = relationship("User", back_populates="sales", foreign_keys=[seller_id])
     listing = relationship("Listing", back_populates="payments")
+
+
+class RentalListing(Base):
+    __tablename__ = "rental_listings"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    vehicle_type = Column(String(10), nullable=False)
+    title = Column(String(200), nullable=False)
+    brand = Column(String(80), nullable=False)
+    model_name = Column(String(80), nullable=False)
+    year = Column(Integer, nullable=False)
+    fuel_type = Column(String(20), nullable=False)
+    transmission = Column(String(20), nullable=False)
+    kms_driven = Column(Integer, nullable=False)
+    price_per_day = Column(Float, nullable=False)
+    price_per_week = Column(Float, nullable=True)
+    price_per_month = Column(Float, nullable=True)
+    location = Column(String(120), nullable=False)
+    description = Column(Text, nullable=False)
+    images = Column(Text, default="[]")
+    is_available = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    owner = relationship("User", back_populates="rental_listings")
+    bookings = relationship("RentalBooking", back_populates="listing", cascade="all, delete-orphan")
+
+
+class RentalBooking(Base):
+    __tablename__ = "rental_bookings"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    listing_id = Column(Integer, ForeignKey("rental_listings.id"), nullable=False, index=True)
+    renter_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    start_date = Column(DateTime, nullable=False)
+    end_date = Column(DateTime, nullable=False)
+    total_days = Column(Integer, nullable=False)
+    total_price = Column(Float, nullable=False)
+    status = Column(String(20), default="pending")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    listing = relationship("RentalListing", back_populates="bookings")
+    renter = relationship("User", back_populates="rental_bookings", foreign_keys=[renter_id])
+
+
+class SparePart(Base):
+    __tablename__ = "spare_parts"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    seller_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    vehicle_type = Column(String(10), nullable=False)
+    category = Column(String(40), nullable=False)
+    title = Column(String(200), nullable=False)
+    brand = Column(String(80), nullable=False)
+    part_number = Column(String(80), nullable=True)
+    condition = Column(String(20), nullable=False)
+    compatibility = Column(Text, default="[]")
+    price = Column(Float, nullable=False)
+    negotiable = Column(Boolean, default=False)
+    quantity_available = Column(Integer, nullable=False, default=1)
+    location = Column(String(120), nullable=False)
+    description = Column(Text, nullable=False)
+    images = Column(Text, default="[]")
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    seller = relationship("User", back_populates="spare_parts")
+    orders = relationship("PartOrder", back_populates="part", cascade="all, delete-orphan")
+
+
+class PartOrder(Base):
+    __tablename__ = "part_orders"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    part_id = Column(Integer, ForeignKey("spare_parts.id"), nullable=False, index=True)
+    buyer_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    seller_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    quantity = Column(Integer, nullable=False)
+    total_price = Column(Float, nullable=False)
+    status = Column(String(20), default="pending")
+    shipping_address = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    part = relationship("SparePart", back_populates="orders")
+    buyer = relationship("User", back_populates="part_orders_buying", foreign_keys=[buyer_id])
+    seller = relationship("User", back_populates="part_orders_selling", foreign_keys=[seller_id])
 
 
 def init_db():
